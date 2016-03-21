@@ -10,8 +10,8 @@ cont = 1;
 
 
 
-lista_supporto = []
-lista_stampa = []
+lista_supporto = [] #mi serve per tenere conto dei geni presenti
+lista_stampa = []   #mi serve per raggruppare gli esoni rispetto al gene
 t = True
 
 
@@ -29,10 +29,12 @@ for riga in in_file.readlines():
        support_ext += ".."
        support_ext += matchObj.group(3)
        support_ext += ":" 
-       if(matchObj.group(4) == '-'):
+       """if(matchObj.group(4) == '-'):
            support_ext += "-1?"
        if(matchObj.group(4) == '+'):
            support_ext += "1?"
+           """
+       support_ext += "1?"
 
        r = requests.get(support_server+support_ext, headers = {"Content-Type" : "text/plain"})
 
