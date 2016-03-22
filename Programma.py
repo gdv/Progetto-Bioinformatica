@@ -1,43 +1,47 @@
-
+#apertura file di input e output
 in_file = open("input.gtf", "r")
 f = open ("output.json", "w")
+
 import re
 import requests, sys
 import json
+
+#servono per la sequenza nucleotidica
 server = "http://grch37.rest.ensembl.org"
 ext = "/sequence/region/human/"
-cont = 1;
 
-
-
-lista_supporto = []
-lista_stampa = []
+lista_supporto = [] #mi serve per tenere conto dei geni presenti
+lista_stampa = []   #mi serve per raggruppare gli esoni rispetto al gene
 t = True
 
 
-lista = []
+lista = [] #lista che conterrà tutti gli esoni del file di input
+
 #per ogni riga
 for riga in in_file.readlines():
-
+    #controllo che sia un esone 
     matchObj = re.match( r'chr([A-Za-z1-9]*)\s+[A-Za-z.]*\s*exon\s*([0-9]*)\s*([0-9]*)\s*.\s*(.)\s*.\s*gene_id\s*([a-zA-z1-9-]*).*', riga, re.M|re.I)
-   #sequenza nucleotidica
+    
+    #Inizio per calcolare sequenza nucleotidica
     if matchObj:
        support_server = server
-       support_ext = ext+matchObj.group(1)
+       support_ext = ext + matchObj.group(1)
        support_ext += ":"
        support_ext += matchObj.group(2)
        support_ext += ".."
        support_ext += matchObj.group(3)
        support_ext += ":" 
-       if(matchObj.group(4) == '-'):
+       """if(matchObj.group(4) == '-'):
            support_ext += "-1?"
        if(matchObj.group(4) == '+'):
            support_ext += "1?"
+           """
+       support_ext += "1?"
 
        r = requests.get(support_server+support_ext, headers = {"Content-Type" : "text/plain"})
 
        #fine sequenza nucleotidica
-       lista.append([matchObj.group(5),matchObj.group(2),matchObj.group(3),matchObj.group(4),r.text,matchObj.group(1)])       
+       lista.append([matchObj.group(5), matchObj.group(2), matchObj.group(3), matchObj.group(4), r.text,matchObj.group(1)])       
        if not r.ok:
            r.raise_for_status()
            sys.exit()
@@ -57,33 +61,43 @@ while ( i < len(lista)):
             lista_stampa = []
             lista_supporto.append(lista[i][0])
             elemento = lista[i][0]
-            f.write("\"Gene_id: "+elemento+"\"")
+            f.write("\"Gene_id\" : \""+elemento+"\"")
+            #print("\"Gene_id\" : \""+elemento+"\"")
             while (j < len(lista)):
                 if( lista[j][0] == elemento):
-                    lista_stampa.append(lista[j][1:6])
+                    lista_stampa.append(lista[j][0:6])
                     #print(lista[j][1:6],"\n")
                 j += 1
 
         #print(lista_stampa[:][0:5])
-        m = 0
-        
-        while (m < len(lista_stampa)):
-            f.write(json.dumps({'Inizio' : lista[m][1],
-                              'Fine' : lista[m][2],
-                              'Strand' : lista[m][3],
-                              'Sequenza' : lista[m][4],
-                              'Cromosoma' : lista[m][5],
-                               },sort_keys=True,indent=16, separators=(',',':')))
-            f.write("\n")
-        #    print("          " + lista[m][1])
-         #   print("          " + lista[m][2])
-          #  print("          " + lista[m][3])
-           # print("          " + lista[m][4])
-            #print("          " + lista[m][5])
-            m+=1
+            m = 0
+            #print(len(lista_stampa))
+            while (m < len(lista_stampa)):
+                f.write(json.dumps({'Inizio' : lista_stampa[m][1],
+                                    'Fine' : lista_stampa[m][2],
+                                    'Strand' : lista_stampa[m][3],
+                                    'Sequenza' : lista_stampa[m][4],
+                                    'Cromosoma' : lista_stampa[m][5],
+                                   },sort_keys=True,indent=16, separators=(',',':')))
+                f.write("\n")
+                m+=1
+            """
+            print("          " + lista[m][1])
+            print("          " + lista[m][2])
+            print("          " + lista[m][3])
+            print("          " + lista[m][4])
+            print("          " + lista[m][5])
+            """
         i += 1
+        
+#chiusura dei file di input/output
 f.close()
 in_file.close()
+
+
+
+
+
 
 """      
 i = 0
