@@ -1,10 +1,17 @@
-#apertura file di input e output
-in_file = open("input.gtf", "r")
+import sys          #serve per il messagio di mancato file
+import re           #server per le regualar expression
+import requests     #serve per la sequenza nucleotidica
+import json         #serve per stampare in formato json
+
+#controllo esistenza file di input ed sua apertura
+try:
+    in_file = open("input.gtf", "r")    
+except OSError:
+    print("File non trovato")
+    
+#apertura/creazione del file di output             
 f = open ("output.json", "w")
 
-import re
-import requests, sys
-import json
 
 #servono per la sequenza nucleotidica
 server = "http://grch37.rest.ensembl.org"
