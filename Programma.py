@@ -24,14 +24,23 @@ t = True
 
 lista = [] #lista che conterrà tutti gli esoni del file di input
 
+exons = {} #hash of exons
+
 #per ogni riga
 for riga in in_file.readlines():
     #controllo che sia un esone 
     matchObj = re.match( r'chr([A-Za-z1-9]*)\s+[A-Za-z.]*\s*exon\s*([0-9]*)\s*([0-9]*)\s*.\s*(.)\s*.\s*gene_id\s*([a-zA-z1-9-]*).*', riga, re.M|re.I)
     
+    exon = {}
     #Inizio per calcolare sequenza nucleotidica
     if matchObj:
        support_server = server
+       exon['chromosome'] = matchObj.group(1)
+       exon['start'] = matchObj.group(2)
+       exon['end'] = matchObj.group(3)
+       id = exon['start'] + ':' + exon['end']
+       if id not in exons:
+           exons['id'] = exon
        support_ext = ext + matchObj.group(1)
        support_ext += ":"
        support_ext += matchObj.group(2)
@@ -54,20 +63,16 @@ for riga in in_file.readlines():
            sys.exit()
            print (r.text)
 
-i = 0
-
-while ( i < len(lista)):
+for elem in lista:
         t = True
-        z = 0
-        while(z < len (lista_supporto)):
-            if(lista_supporto[z] == lista[i][0]):
+        for elem_supp in lista_supporto:
+            if(elem_supp == elem[0]):
                 t = False
-            z += 1
         if (t == True):
             j = 0
             lista_stampa = []
-            lista_supporto.append(lista[i][0])
-            elemento = lista[i][0]
+            lista_supporto.append(elem[0])
+            elemento = elem[0]
             f.write("\"Gene_id\" : \""+elemento+"\"")
             #print("\"Gene_id\" : \""+elemento+"\"")
             while (j < len(lista)):
@@ -77,26 +82,15 @@ while ( i < len(lista)):
                 j += 1
 
         #print(lista_stampa[:][0:5])
-            m = 0
             #print(len(lista_stampa))
-            while (m < len(lista_stampa)):
-                f.write(json.dumps({'Inizio' : lista_stampa[m][1],
-                                    'Fine' : lista_stampa[m][2],
-                                    'Strand' : lista_stampa[m][3],
-                                    'Sequenza' : lista_stampa[m][4],
-                                    'Cromosoma' : lista_stampa[m][5],
-                                   },sort_keys=True,indent=16, separators=(',',':')))
-                f.write("\n")
-                m+=1
-            """
-            print("          " + lista[m][1])
-            print("          " + lista[m][2])
-            print("          " + lista[m][3])
-            print("          " + lista[m][4])
-            print("          " + lista[m][5])
-            """
-        i += 1
-        
+            for elem in lista_stampa:
+                f.write(json.dumps({'Inizio' : elem[1],
+                                    'Fine' : elem[2],
+                                    'Strand' : elem[3],
+                                    'Sequenza' : elem[4],
+                                    'Cromosoma' : elem[5],
+                                   },sort_keys=True,indent=16, separators=(',',':')) + "\n")
+
 #chiusura dei file di input/output
 f.close()
 in_file.close()
